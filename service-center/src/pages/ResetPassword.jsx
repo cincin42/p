@@ -14,14 +14,14 @@ export default function ResetPassword() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
-      <div className="bg-white shadow-lg rounded-lg p-8 max-w-md w-full">
+      <div className="bg-red-800 shadow-lg rounded-lg p-8 max-w-md w-full">
         <h2 className="text-3xl font-bold mb-4 text-center">Reset Password</h2>
 
         <form onSubmit={handleReset}>
           <input
             type="email"
             placeholder="Enter your email"
-            className="border p-2 w-full mb-4 rounded"
+            className="border p-2 w-full mb-4 rounded text-black-100 text-shadow-yellow-600"
             onChange={(e) => setEmail(e.target.value)}
           />
 

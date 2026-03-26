@@ -3,6 +3,16 @@ import { useAuth } from "../context/AuthContext";
 export default function VerifyEmail() {
   const { user, sendVerification } = useAuth();
 
+  const handleResend = async () => {
+    const result = await sendVerification
+
+    if (!result.sucess) {
+      alert(result.message);
+      return;
+    }
+    alert("Verification email resent! Please check your inbox.");
+
+  }
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
       <div className="bg-white shadow-lg rounded-lg p-8 max-w-md w-full text-center">
@@ -23,7 +33,7 @@ export default function VerifyEmail() {
         </p>
 
         <button
-          onClick={sendVerification}
+          onClick={handleResend}
           className="bg-blue-600 text-white py-2 px-4 rounded w-full hover:bg-blue-700 transition"
         >
           Resend Verification Email

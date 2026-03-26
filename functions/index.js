@@ -34,7 +34,33 @@
 // Mailgun email function
 const functions = require("firebase-functions/v1");
 const mailgun = require("mailgun-js");
+const admin = require("firebase-admin");
+admin.initializeApp();
 
+exports.getAvailableTimes = functions.https.onCall(async (data, context) => {
+  const {date} = data;
+
+  if (!context.auth) {
+    throw new functions.https.HttpsError(
+        "unauthenticated",
+        "You must be logged in.",
+    );
+  }
+
+  if (!date) {
+    throw new functions.https.HttpsError(
+        "invalid-argument",
+        "Date is required.",
+    );
+  }
+
+  const appointmentsRef = admin.firestore().collection("appointments");
+  const snapshot = await appointmentsRef.where("date", "==", date).get();
+
+  const bookedTimes = snapshot.docs.map((doc) => doc.data().time);
+
+  return {bookedTimes};
+});
 exports.sendAppointmentEmail = functions
     .runWith({timeoutSeconds: 30, memory: "256MB"}) // forces Gen1
     .https.onCall(async (data, context) => {

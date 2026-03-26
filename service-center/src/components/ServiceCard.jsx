@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 export default function ServiceCard({ title, description, price }) {
     return (
         <div
@@ -14,6 +16,16 @@ export default function ServiceCard({ title, description, price }) {
       <p className="text-red-600 font-semibold text-lg">
         ${price}
       </p>
+
+      {/*  Link to service details page */}
+       <Link
+        to={`/appointment?service=${encodeURIComponent(title)}`}
+        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+      >
+        Schedule
+      </Link>
+
+
     </div>
 
     )

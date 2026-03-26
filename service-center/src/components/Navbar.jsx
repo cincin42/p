@@ -33,7 +33,6 @@ export default function Navbar() {
         <div className="hidden md:flex items-center gap-6 text-lg">
           <Link to="/">Home</Link>
           <Link to="/services">Services</Link>
-          <Link to="/appointment">Appointment</Link>
 
           {/* Admin Dashboard Link */}
           {user?.role === "admin" && (
@@ -41,8 +40,13 @@ export default function Navbar() {
           )}
 
           {/* If logged in → show avatar + dropdown */}
-          {user ? (
+          {(user && user.emailVeriffied ) ? (
+            
             <div className="relative">
+              <div>
+                <Link to="/appointment">Appointment</Link>
+              </div>
+
               <div
                 className="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center cursor-pointer"
                 onClick={() => setDropdown(!dropdown)}

@@ -1,6 +1,6 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import AppointmentForm from "../components/AppointmentForm";
-
+import { useState } from "react";
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 import { useAuth } from "../context/AuthContext";
@@ -12,6 +12,14 @@ import { db, functions } from "../firebase";
 export default function Appointment() {
   const navigate = useNavigate();
   const { user } = useAuth();
+
+   // ⭐ Read ?service= from URL
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const preselectedService = params.get("service") || "";
+  
+   // ⭐ Store selected service in state
+  const [service, setService] = useState(preselectedService);
 
   const handleAppointmentSubmit = async (data) => {
     if (!user) return alert("You must be logged in to book an appointment.");
@@ -43,7 +51,8 @@ export default function Appointment() {
 
   return (
     <div className="p-6">
-      <AppointmentForm onSubmit={handleAppointmentSubmit} />
+      <AppointmentForm onSubmit={handleAppointmentSubmit} 
+      preselectedService={service} />
     </div>
   );
 }

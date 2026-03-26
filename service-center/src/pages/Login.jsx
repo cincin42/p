@@ -13,15 +13,26 @@ export default function Login() {
   const navigate = useNavigate();
   
   const handleLogin = async (e) => {
-    e.preventDefault();
-    await login(email, password, rememberMe);
-    if (auth.currentUser && !auth.currentUser.emailVerified){
-      navigate("/verify-email");
-      return;
-    }
-    navigate("/account");
-  };
+  e.preventDefault();
 
+  const result = await login(email, password, rememberMe);
+
+  if (!result.success) {
+    alert(result.message); // or set an error state
+    return;
+  }
+
+  // ⭐ Refresh user data from Firebase
+  await auth.currentUser.reload();
+
+  // Email verification check
+  if (auth.currentUser && !auth.currentUser.emailVerified) {
+    navigate("/verify-email");
+    return;
+  }
+
+  navigate("/account");
+};
   return (
     <div className="p-6 max-w-md mx-auto">
       <h2 className="text-2xl font-bold mb-4">Login</h2>

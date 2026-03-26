@@ -20,8 +20,22 @@ import { googleProvider } from "../firebase";
 import { sendEmailVerification } from "firebase/auth";
 
 const sendVerification = async () => {
-  if (auth.currentUser) {
-    await sendEmailVerification(auth.currentUser);
+  try {
+    if (auth.currentUser) {
+      await sendEmailVerification(auth.currentUser);
+      return { success : true}
+    }
+  } catch (error) {
+    if(error.code === "auth/too-many-requests") {
+      return {
+        success: false,
+        message: "Too many requests. Please try again later."
+      };
+    }
+    return {
+      success: false,
+      message: "Could not send verification email. Please try again later."
+    }
   }
 };
 
@@ -51,15 +65,37 @@ export function AuthProvider({ children }) {
 
   // LOGIN
   const login = async (email, password, rememberMe) => {
-    setLoading(true);
-
+  try {
+    //Set persistence Before login
     await setPersistence(
       auth,
       rememberMe ? browserLocalPersistence : browserSessionPersistence
     );
 
-    await signInWithEmailAndPassword(auth, email, password);
-  };
+    //Now perform the actual login
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    return { success: true, user: userCredential.user };
+  } catch (error) {
+    console.error("Login Error:", error.code);
+
+    if (
+      error.code === "auth/user-not-found" ||
+      error.code === "auth/invalid-credential"
+    ) {
+      return {
+        success: false,
+        reason: "no-user",
+        message: "No account found with this email. Please create an account."
+      };
+    }
+
+    return {
+      success: false,
+      reason: "other",
+      message: error.message
+    };
+  }
+};
 
   // LOGOUT
   const logout = () => signOut(auth);

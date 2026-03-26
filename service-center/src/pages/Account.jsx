@@ -38,6 +38,8 @@ export default function Account() {
           <p><strong>Time:</strong> {a.time}</p>
         </div>
       ))}
+
+      
     </div>
   );
 }

@@ -15,6 +15,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import VerifyEmail from "./pages/VerifyEmail";
 import ResetPassword from "./pages/ResetPassword";
 import NotAuthorized from "./pages/NotAuthorized";
+import About from "./pages/About";
 
 
 function App() {
@@ -25,7 +26,12 @@ function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/services" element={<Services />} />
-          <Route path="/appointment" element={<Appointment />} />
+          <Route path="/appointment" 
+                 element=
+                 {<ProtectedRoute>
+                 <Appointment />
+                 </ProtectedRoute>
+                } />
           
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
