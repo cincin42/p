@@ -37,30 +37,109 @@ const mailgun = require("mailgun-js");
 const admin = require("firebase-admin");
 admin.initializeApp();
 
-exports.getAvailableTimes = functions.https.onCall(async (data, context) => {
-  const {date} = data;
+exports.getAvailableTimes = functions
+    .region("us-central1")
+    .https.onCall(async (data, context) => {
+      const {date, duration} = data;
 
-  if (!context.auth) {
-    throw new functions.https.HttpsError(
-        "unauthenticated",
-        "You must be logged in.",
-    );
-  }
+      if (!context.auth) {
+        throw new functions.https.HttpsError(
+            "unauthenticated",
+            "You must be logged in.",
+        );
+      }
 
-  if (!date) {
-    throw new functions.https.HttpsError(
-        "invalid-argument",
-        "Date is required.",
-    );
-  }
+      if (!date || !duration) {
+        throw new functions.https.HttpsError(
+            "invalid-argument",
+            "Date and duration are required.",
+        );
+      }
 
-  const appointmentsRef = admin.firestore().collection("appointments");
-  const snapshot = await appointmentsRef.where("date", "==", date).get();
+      const appointmentsRef = admin.firestore().collection("appointments");
+      const snapshot = await appointmentsRef.where("date", "==", date).get();
 
-  const bookedTimes = snapshot.docs.map((doc) => doc.data().time);
+      // Convert booked appointments into time ranges
+      const bookedRanges = snapshot.docs.map(doc => {
+        const {time, duration: bookedDuration} = doc.data();
+        return {
+          start: time,
+          end: addMinutes(time, bookedDuration || 60),
+        };
+      });
 
-  return {bookedTimes};
-});
+      const allSlots = [
+        "9:00 AM",
+        "10:00 AM",
+        "11:00 AM",
+        "1:00 PM",
+        "2:00 PM",
+        "3:00 PM",
+      ];
+
+      const openSlots = allSlots.filter(slot => {
+        const slotStart = slot;
+        const slotEnd = addMinutes(slot, duration);
+
+        // Check overlap
+        return !bookedRanges.some(range => 
+          timeRangesOverlap(slotStart, slotEnd, range.start, range.end)
+        );
+      });
+
+      return {openSlots};
+    });
+
+// Helper functions
+
+/**
+ * Adds minutes to a time string and returns the new time.
+ * @param {string} timeStr - The time in "H:MM AM/PM" format.
+ * @param {number} minutes - The number of minutes to add.
+ * @return {string} The new time in "H:MM AM/PM" format.
+ */
+function addMinutes(timeStr, minutes) {
+  const [time, modifier] = timeStr.split(" ");
+  let [hours, mins] = time.split(":").map(Number);
+
+  if (modifier === "PM" && hours !== 12) hours += 12;
+  if (modifier === "AM" && hours === 12) hours = 0;
+
+  const date = new Date();
+  date.setHours(hours);
+  date.setMinutes(mins + minutes);
+
+  return formatTime(date);
+}
+
+/**
+ * Formats a Date object to a time string in "H:MM AM/PM" format.
+ * @param {Date} date - The Date object to format.
+ * @return {string} The formatted time string.
+ */
+function formatTime(date) {
+  let hours = date.getHours();
+  const mins = date.getMinutes().toString().padStart(2, "0");
+  const ampm = hours >= 12 ? "PM" : "AM";
+
+  hours = hours % 12 || 12;
+
+  return `${hours}:${mins} ${ampm}`;
+}
+
+/**
+ * Checks if two time ranges overlap.
+ * @param {string} start1 - The start time of the first range.
+ * @param {string} end1 - The end time of the first range.
+ * @param {string} start2 - The start time of the second range.
+ * @param {string} end2 - The end time of the second range.
+ * @return {boolean} True if the ranges overlap, false otherwise.
+ */
+function timeRangesOverlap(start1, end1, start2, end2) {
+  return start1 < end2 && start2 < end1;
+}
+
+
 exports.sendAppointmentEmail = functions
     .runWith({timeoutSeconds: 30, memory: "256MB"}) // forces Gen1
     .https.onCall(async (data, context) => {

@@ -6,19 +6,19 @@ import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { useAuth } from "../context/AuthContext";
 import { httpsCallable } from "firebase/functions";
 
-// ⭐ Import db and functions from your firebase.js file
+// ⭐ Import db and functions from firebase.js (already region-bound)
 import { db, functions } from "../firebase";
 
 export default function Appointment() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-   // ⭐ Read ?service= from URL
+  // Read ?service= from URL
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const preselectedService = params.get("service") || "";
-  
-   // ⭐ Store selected service in state
+
+  //Keep stateful so parent & form can update the selected service
   const [service, setService] = useState(preselectedService);
 
   const handleAppointmentSubmit = async (data) => {
@@ -51,8 +51,11 @@ export default function Appointment() {
 
   return (
     <div className="p-6">
-      <AppointmentForm onSubmit={handleAppointmentSubmit} 
-      preselectedService={service} />
+      <AppointmentForm
+        onSubmit={handleAppointmentSubmit}
+        preselectedService={service}
+        onServiceChange={setService}
+      />
     </div>
   );
 }

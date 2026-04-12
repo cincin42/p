@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { db } from "../firebase";
+import { db } from "../../firebase";
 import { collection, getDocs, updateDoc, doc } from "firebase/firestore";
 
 export default function AdminDashboard() {
@@ -92,6 +92,15 @@ export default function AdminDashboard() {
           <p><strong>Time:</strong> {a.time}</p>
         </div>
         ))}
+      </div>
+
+      <div>
+        <Link
+          to={`/admin/complete/${appointment.id}`}
+          className="bg-blue-600 px-3 py-1 rounded hover:bg-blue-500"
+        >
+          Complete Service
+        </Link>
       </div>
 
     </div>

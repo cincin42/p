@@ -18,12 +18,17 @@ import { auth, db } from "../firebase";
 import { signInWithPopup } from "firebase/auth";
 import { googleProvider } from "../firebase";
 import { sendEmailVerification } from "firebase/auth";
+import ChangePassword from "../pages/account/ChangePassword";
+
 
 const sendVerification = async () => {
   try {
     if (auth.currentUser) {
       await sendEmailVerification(auth.currentUser);
       return { success : true}
+    }
+    return { success: false, 
+      message: "No user is currently logged in. Please log in to send a verification email."
     }
   } catch (error) {
     if(error.code === "auth/too-many-requests") {
@@ -56,8 +61,10 @@ export function AuthProvider({ children }) {
 
     // Create Firestore profile
     await setDoc(doc(db, "users", userCred.user.uid), {
+      name,
       email,
-      role: "user",
+  
+            role: "user",
       createdAt: new Date(),
     });
     await sendEmailVerification(userCred.user);
@@ -85,7 +92,7 @@ export function AuthProvider({ children }) {
       return {
         success: false,
         reason: "no-user",
-        message: "No account found with this email. Please create an account."
+        message: "Email or password does not match our records."
       };
     }
 
@@ -102,29 +109,17 @@ export function AuthProvider({ children }) {
 
   // LISTEN FOR AUTH CHANGES + LOAD USER PROFILE
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (!firebaseUser) {
-        setUser(null);
-        setLoading(false);
-        return;
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      if (currentUser) {
+        await currentUser.reload(); // 🔥 force refresh from Firebase
       }
-
-      const ref = doc(db, "users", firebaseUser.uid);
-      const snap = await getDoc(ref);
-
-      if (snap.exists()) {
-        setUser({
-          uid: firebaseUser.uid,
-          email: firebaseUser.email,
-          ...snap.data(), // includes name + role
-        });
-      }
-
+      setUser(auth.currentUser);
       setLoading(false);
-    });
+});
 
-    return unsubscribe;
-  }, []);
+  return unsubscribe;
+}, []);
+
   const googleLogin = async () => {
   setLoading(true);
 

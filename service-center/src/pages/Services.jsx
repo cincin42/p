@@ -3,25 +3,51 @@ import ServiceCard from "../components/ServiceCard";
 export default function Services() {
   const services = [
     {
-      title: "Oil Change",
-      description: "Full synthetic oil change with filter replacement.",
-      price: 89,
+      title: "Diagnostics: CAT, Cummins, OBD2",
+      description: "Comprehensive diagnostics for all major heavy equipment brands.",
+      price: 99,
     },
     {
-      title: "Brake Inspection",
-      description: "Complete brake system check and safety evaluation.",
-      price: 49,
+      title: "Heavy/Medium Duty Trucks",
+      description: "Expert maintenance and repair for heavy and medium duty trucks.",
+      price: 149,
     },
     {
-      title: "Tire Rotation",
-      description: "Front-to-back tire rotation for even wear.",
-      price: 29,
+      title: "Automobile Service",
+      description: "Full-service maintenance and repair for cars and light trucks.",
+      price: 79,  
     },
     {
-      title: "Hydraulic Repair",
-      description: "Professional hydraulic diagnostics and repair.",
+      title: "Farm Equipment Repair",
+      description: "Specialized repair services for agricultural machinery.",
+      price: 129,
+    },
+    {
+      title: "Heavy Equipment Repair",
+      description: "Skilled repair services for all types of heavy equipment.",
       price: 199,
     },
+    {
+      title: "Engine Repair, Rebuild,and Replacement",
+      description: "Complete engine services including repair, rebuild, and replacement.",
+      price: 499,
+      
+    },
+    {
+      title: "Emergency Roadside Assistance",
+      description: "Breakdown assistance for heavy equipment and trucks, available 24/7.",
+      price: 199,
+    },
+    {
+      title: "Traffic Control",
+      description: "Professional traffic control services for construction sites and events.",
+      price: 149,
+    }, 
+    {
+      title: "DOT Inspections",
+      description: "Certified DOT inspections to keep your vehicles compliant and safe.",
+      price: 89,  
+    }, 
   ];
 
   return (

@@ -21,3 +21,5 @@ export const googleProvider = new GoogleAuthProvider();
 
 // ⭐ Add this
 export const functions = getFunctions(app, "us-central1");
+
+export { app }

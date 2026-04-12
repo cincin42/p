@@ -18,8 +18,11 @@ export default function Home() {
         {/* Hero Content */}
         <div className="relative z-10 text-center text-white px-6 max-w-3xl">
           <h1 className="text-5xl font-extrabold drop-shadow-lg">
-            Heavy Equipment Service You Can Trust
+           CD HEAVY EQUIPMENT LLC
           </h1>
+          <h2 className="text-3xl font-bold drop-shadow-lg">
+             Heavy Equipment Service You Can Trust
+          </h2>
 
           <p className="mt-4 text-lg opacity-90">
             Reliable maintenance, expert repairs, and fast scheduling for all your heavy equipment needs.

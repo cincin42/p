@@ -1,41 +1,64 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
-import { auth } from "../firebase";
+import { useLocation, useNavigate } from "react-router-dom";
+
 
 
 
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { login, googleLogin, loading } = useAuth();
+  const { login, googleLogin, loading, user } = useAuth();
   const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate();
+  const [error, setError] = useState("");
+  
+  
+  const location = useLocation();
+
+
+    // default fallback if user just visits /login directly
+  const from = location.state?.from || "/account";
+
   
   const handleLogin = async (e) => {
   e.preventDefault();
+  setError(""); // Clear previous errors
 
   const result = await login(email, password, rememberMe);
 
   if (!result.success) {
-    alert(result.message); // or set an error state
+    setError(result.message); // or set an error state
     return;
   }
 
-  // ⭐ Refresh user data from Firebase
-  await auth.currentUser.reload();
-
-  // Email verification check
-  if (auth.currentUser && !auth.currentUser.emailVerified) {
-    navigate("/verify-email");
-    return;
-  }
-
-  navigate("/account");
 };
+
+useEffect(() => {
+  if (!user) return;
+
+  if (user.emailVerified) {
+    navigate("/");
+  } else {
+    navigate("/verify-email", {
+      state: { from },
+      replace: true
+    });
+    
+  }
+}, [user, navigate, from]);
+
   return (
     <div className="p-6 max-w-md mx-auto">
       <h2 className="text-2xl font-bold mb-4">Login</h2>
+
+      {
+        error && (
+          <p className="bg-red-100 text-red-700 p-2 rounded mb-3 text-sm">
+            {error}
+          </p>
+        )
+      }
 
       <form onSubmit={handleLogin}>
         <input

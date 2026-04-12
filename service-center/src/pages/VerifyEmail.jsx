@@ -1,18 +1,31 @@
+import { useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export default function VerifyEmail() {
   const { user, sendVerification } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from || "/account";
 
   const handleResend = async () => {
-    const result = await sendVerification
+    const result = await sendVerification()
 
-    if (!result.sucess) {
+    if (!result.success) {
       alert(result.message);
       return;
     }
     alert("Verification email resent! Please check your inbox.");
 
   }
+
+  useEffect(() => {
+    if (user?.emailVerified) {
+      navigate(from, { replace: true });
+    }
+  },[user, navigate, from]);
+
+ 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
       <div className="bg-white shadow-lg rounded-lg p-8 max-w-md w-full text-center">
