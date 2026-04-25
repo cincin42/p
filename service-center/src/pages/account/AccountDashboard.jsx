@@ -5,6 +5,19 @@ export default function Account() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
+
+  const handleLogout = async () => {
+    if(!window.confirm("Are you sure you want to log out?")) return;
+    try{
+      await logout();
+      navigate("/");
+    } catch (error) {
+      console.log("Logout failed:", error);
+      //shows error message to user
+      alert("Logout failed. Please try again.");  
+    }
+  };
+
   return (
     <div className="max-w-4xl mx-auto p-6">
       <h1 className="text-3xl font-bold mb-6">My Account</h1>
@@ -60,11 +73,7 @@ export default function Account() {
         {/* Logout */}
         <section className="pt-4 border-t border-gray-700">
           <button
-            onClick={() => {
-              if (window.confirm("Are you sure you want to log out?")) {
-                logout();
-              }
-            }}
+            onClick={handleLogout}
             className="bg-red-600 px-4 py-2 rounded hover:bg-red-500"
           >
             Logout

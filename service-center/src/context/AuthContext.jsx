@@ -12,6 +12,7 @@ import {
   setPersistence,
   browserLocalPersistence,
   browserSessionPersistence,
+  updateProfile
 } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { auth, db } from "../firebase";
@@ -19,7 +20,7 @@ import { signInWithPopup } from "firebase/auth";
 import { googleProvider } from "../firebase";
 import { sendEmailVerification } from "firebase/auth";
 import ChangePassword from "../pages/account/ChangePassword";
-
+import { useNavigate } from "react-router-dom";
 
 const sendVerification = async () => {
   try {
@@ -46,7 +47,7 @@ const sendVerification = async () => {
 
 
 const AuthContext = createContext();
-
+export function useAuth() { return useContext(AuthContext);}
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true); // loading state
@@ -59,15 +60,22 @@ export function AuthProvider({ children }) {
       password
     );
 
+    //set display name on the firebase auth user
+    if (name) {
+      await updateProfile(userCred.user, { displayName: name });
+    }
+
     // Create Firestore profile
     await setDoc(doc(db, "users", userCred.user.uid), {
-      name,
+      name: name || userCred.user.displayName || "", 
       email,
   
             role: "user",
       createdAt: new Date(),
     });
     await sendEmailVerification(userCred.user);
+    //Return to the credential so callers can react(redirect, show toast, etc)
+    return userCred;
   };
 
   // LOGIN
@@ -105,7 +113,10 @@ export function AuthProvider({ children }) {
 };
 
   // LOGOUT
-  const logout = () => signOut(auth);
+  const logout = async () => {
+    //signOut returns a promise
+    return signOut(auth);
+  }
 
   // LISTEN FOR AUTH CHANGES + LOAD USER PROFILE
   useEffect(() => {
@@ -150,8 +161,4 @@ export function AuthProvider({ children }) {
       {children}
     </AuthContext.Provider>
   );
-}
-
-export function useAuth() {
-  return useContext(AuthContext);
 }

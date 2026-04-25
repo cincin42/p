@@ -1,57 +1,83 @@
-import { useEffect } from "react";
+// src/pages/VerifyEmail.jsx
+import React, { useState } from "react";
+import { useNavigate, useLocation} from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { useLocation, useNavigate } from "react-router-dom";
 
 export default function VerifyEmail() {
-  const { user, sendVerification } = useAuth();
+  const { sendVerification, user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const from = location.state?.from || "/account";
+  const email = location.state?.email || user?.email || "";
+  const returnTo = location.state?.from || location.state?.attempted?.pathname || "/personal-info";
+
+
+
+  const [status, setStatus] = useState("");
+  const [sending, setSending] = useState(false);
 
   const handleResend = async () => {
-    const result = await sendVerification()
-
-    if (!result.success) {
-      alert(result.message);
-      return;
+    setStatus("");
+    setSending(true);
+    try {
+      const res = await sendVerification();
+      if (res?.success) setStatus("Verification email sent. Check your inbox.");
+      else setStatus(res?.message || "Could not send verification email.");
+    } catch (err) {
+      setStatus("Failed to send verification email. Try again later.");
+      console.error(err);
+    } finally {
+      setSending(false);
     }
-    alert("Verification email resent! Please check your inbox.");
+  };
 
-  }
-
-  useEffect(() => {
-    if (user?.emailVerified) {
-      navigate(from, { replace: true });
+  const handleContinue = async () => {
+    setStatus("");
+    try { 
+      // Ensure firebase has the latest user state
+      if (user && user.reload) await user.reload();
+      if (user?.emailVerified) {
+        //Navigate back to original destination
+        navigate(returnTo, {replace: true});
+      }
+      else {
+        setStatus("Your email is still not verified. Please check your inbox and click the verification link.");
+      }
+    } catch (err) {
+      setStatus("Failed to check verification status. Try again later.");
+      console.error(err);
     }
-  },[user, navigate, from]);
+  };
 
- 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
-      <div className="bg-white shadow-lg rounded-lg p-8 max-w-md w-full text-center">
-        <h2 className="text-3xl font-bold mb-4">Verify Your Email</h2>
+    <div className="max-w-md mx-auto p-6">
+      <h1 className="text-2xl font-bold mb-4">Verify your email</h1>
 
-        <p className="text-gray-700 mb-2">
-          Hi <span className="font-semibold">{user?.name}</span>,
-        </p>
+      <p className="mb-4">
+        We sent a verification link to <strong>{email}</strong>. Click the link in that email to verify your account.
+      </p>
 
-        <p className="text-gray-700 mb-6">
-          We sent a verification link to:
-        </p>
+      {status && <div className="mb-4 text-sm text-yellow-300">{status}</div>}
 
-        <p className="font-semibold text-blue-600 mb-6">{user?.email}</p>
-
-        <p className="text-gray-600 mb-6">
-          Please check your inbox and click the verification link to activate your account.
-        </p>
-
+      <div className="flex gap-2">
         <button
           onClick={handleResend}
-          className="bg-blue-600 text-white py-2 px-4 rounded w-full hover:bg-blue-700 transition"
+          disabled={sending}
+          className="bg-blue-600 text-white px-4 py-2 rounded"
         >
-          Resend Verification Email
+          {sending ? "Sending..." : "Resend verification email"}
+        </button>
+
+        <button
+          onClick={handleContinue}
+          className="bg-green-600 text-white px-4 py-2 rounded"
+        >
+          I verified, continue
         </button>
       </div>
+
+      <p className="mt-4 text-sm text-gray-500">
+        Didn’t receive the email? Check your spam folder or try resending.
+      </p>
     </div>
   );
 }
